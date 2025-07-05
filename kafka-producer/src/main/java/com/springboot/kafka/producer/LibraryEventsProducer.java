@@ -5,11 +5,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springboot.kafka.dto.LibraryEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.header.Header;
+import org.apache.kafka.common.header.internals.RecordHeader;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -68,7 +71,10 @@ public class LibraryEventsProducer {
 
 
     public ProducerRecord<Integer, String> buildProducerRecord(String topicName, Integer key, String value) {
-        return new ProducerRecord<>(topicName, key, value);
+
+        List<Header> headers =  List.of(new RecordHeader("event-source", "library-events-app".getBytes()));
+
+        return new ProducerRecord<>(topicName, null, key, value, headers);
     }
 
 }
