@@ -10,6 +10,7 @@ import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 @Component
 @Slf4j
@@ -48,6 +49,20 @@ public class LibraryEventsProducer {
                     }
                 }
         );
+    }
+
+    public void sendLibraryEventSynchronous(LibraryEvent libraryEvent) throws JsonProcessingException, ExecutionException, InterruptedException {
+
+        int key = libraryEvent.libraryEventId();
+        String value = objectMapper.writeValueAsString(libraryEvent);
+
+        log.info("LibraryEvent key: {}, value: {}", key, value);
+        SendResult<Integer, String> result =  kafkaTemplate.send(
+                topicName,
+                key,
+                value
+        ).get();
+        log.info("Message sent successfully: {} ", result.getProducerRecord().value());
     }
 
 }
