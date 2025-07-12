@@ -38,11 +38,11 @@ public class LibraryEventsProducer {
 
         log.info("LibraryEvent key: {}, value: {}", key, value);
 
-        CompletableFuture<SendResult<Integer, String>> completableFuture =  kafkaTemplate.send(
+        CompletableFuture<SendResult<Integer, String>> completableFuture =  kafkaTemplate.send(buildProducerRecord(
                 topicName,
                 key,
                 value
-        );
+        ));
 
         completableFuture.whenComplete(
                 (sendResult, throwable) -> {
@@ -71,7 +71,9 @@ public class LibraryEventsProducer {
 
 
     public ProducerRecord<Integer, String> buildProducerRecord(String topicName, Integer key, String value) {
-
+        if (key == null) {
+            key = 0; // Default key if libraryEventId is null
+        }
         List<Header> headers =  List.of(new RecordHeader("event-source", "library-events-app".getBytes()));
 
         return new ProducerRecord<>(topicName, null, key, value, headers);
