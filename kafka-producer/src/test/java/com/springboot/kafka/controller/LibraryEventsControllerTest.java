@@ -4,9 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springboot.kafka.producer.LibraryEventsProducer;
 import com.springboot.kafka.util.TestUtil;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -20,6 +17,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(LibraryEventsController.class)
@@ -56,6 +54,25 @@ class LibraryEventsControllerTest {
 
         // then
         resultActions.andExpect(status().isCreated());
+    }
+
+    @Test
+    public void testPostLibraryEvent_invalid_data() throws Exception {
+        // given
+        String payload = objectMapper.writeValueAsString(TestUtil.bookRecordWithInvalidValues());
+        doNothing().when(libraryEventsProducer).sendLibraryEvent(any());
+
+        // when
+        ResultActions resultActions = mockMvc.perform(
+                MockMvcRequestBuilders.post("/v1/libraryevent")
+                        .content(payload)
+                        .contentType(MediaType.APPLICATION_JSON)
+        );
+
+        // then
+        resultActions
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("book: must not be null"));
     }
 
     @TestConfiguration
