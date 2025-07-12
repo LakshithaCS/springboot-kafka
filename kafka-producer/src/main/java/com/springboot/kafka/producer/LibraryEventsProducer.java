@@ -33,7 +33,7 @@ public class LibraryEventsProducer {
 
     public void sendLibraryEvent(LibraryEvent libraryEvent) throws JsonProcessingException {
 
-        int key = libraryEvent.libraryEventId();
+        Integer key = libraryEvent.libraryEventId();
         String value = objectMapper.writeValueAsString(libraryEvent);
 
         log.info("LibraryEvent key: {}, value: {}", key, value);
@@ -57,7 +57,7 @@ public class LibraryEventsProducer {
 
     public void sendLibraryEventSynchronous(LibraryEvent libraryEvent) throws JsonProcessingException, ExecutionException, InterruptedException {
 
-        int key = libraryEvent.libraryEventId();
+        Integer key = libraryEvent.libraryEventId();
         String value = objectMapper.writeValueAsString(libraryEvent);
 
         log.info("LibraryEvent key: {}, value: {}", key, value);
