@@ -19,6 +19,7 @@ public class LibraryEventKafkaConfig {
     ) {
         ConcurrentKafkaListenerContainerFactory<Object, Object> factory = new ConcurrentKafkaListenerContainerFactory<>();
         configurer.configure(factory, kafkaConsumerFactory);
+        factory.setConcurrency(3); // Set the concurrency level for parallel processing
         // factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
         return factory;
     }
