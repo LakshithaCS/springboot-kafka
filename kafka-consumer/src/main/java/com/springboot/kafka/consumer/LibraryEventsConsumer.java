@@ -1,5 +1,6 @@
 package com.springboot.kafka.consumer;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.springboot.kafka.service.LibraryEventsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,15 +16,14 @@ public class LibraryEventsConsumer {
     private final LibraryEventsService libraryEventsService;
 
     @KafkaListener(topics = "${spring.kafka.topic}", groupId = "${spring.kafka.consumer.group-id}")
-    public void onLibraryEvent(ConsumerRecord<Integer, String> message) {
-
+    public void onLibraryEvent(ConsumerRecord<Integer, String> message) throws JsonProcessingException {
         log.info("Received message: {}", message);
-        try {
-            libraryEventsService.processLibraryEvent(message);
-        } catch (Exception e) {
-            log.error("Error processing message: {}", e.getMessage(), e);
-        }
+        libraryEventsService.processLibraryEvent(message);
+    }
 
+    @KafkaListener(topics = "${topic.retry}", groupId = "${spring.kafka.consumer.group-id}")
+    public void onLibraryRetryEvent(ConsumerRecord<Integer, String> message) {
+        log.info("Received Retry message: {}", message);
     }
 
 }

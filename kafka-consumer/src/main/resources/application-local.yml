@@ -1,6 +1,11 @@
 server:
   port: 8081
 
+
+topic:
+  retry: "library-events.RETRY"
+  dlt: "library-events.DLT"
+
 spring:
   config:
     activate:
