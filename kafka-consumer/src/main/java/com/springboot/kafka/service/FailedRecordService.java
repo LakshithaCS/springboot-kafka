@@ -6,6 +6,8 @@ import com.springboot.kafka.repository.FailedRecordRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class FailedRecordService {
@@ -19,5 +21,9 @@ public class FailedRecordService {
         failedRecord.setRecordValue(recordValue);
 
         failedRecordRepository.save(failedRecord);
+    }
+
+    public List<FailedRecord> getRecoverableRecords() {
+        return failedRecordRepository.findAllByRecordType(RecordType.RECOVERABLE);
     }
 }
