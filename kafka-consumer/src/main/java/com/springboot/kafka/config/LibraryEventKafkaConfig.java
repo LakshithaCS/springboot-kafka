@@ -57,7 +57,6 @@ public class LibraryEventKafkaConfig {
 
     private CommonErrorHandler getErrorHandler() {
         FixedBackOff backOff = new FixedBackOff(1000L, 3); // Retry 3 times with a 1 second interval
-        var exceptionToRetry = List.of(IllegalArgumentException.class);
 
         DefaultErrorHandler errorHandler = new DefaultErrorHandler(recoverer(), backOff);
 
@@ -66,7 +65,6 @@ public class LibraryEventKafkaConfig {
                     System.out.println("Retrying record: " + record + ", attempt: " + deliveryAttempt);
                 }
         );
-        exceptionToRetry.forEach(errorHandler::addNotRetryableExceptions);
 
         return errorHandler;
     }

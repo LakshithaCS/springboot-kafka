@@ -26,4 +26,9 @@ public class LibraryEventsConsumer {
         log.info("Received Retry message: {}", message);
     }
 
+    @KafkaListener(topics = "${topic.dlt}", groupId = "${spring.kafka.consumer.group-id}")
+    public void onLibraryDeadLetterEvent(ConsumerRecord<Integer, String> message) {
+        log.info("Received Dead-Letter message: {}", message);
+    }
+
 }
