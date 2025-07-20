@@ -1,5 +1,7 @@
 package com.springboot.kafka.config;
 
+import com.springboot.kafka.entity.RecordType;
+import com.springboot.kafka.service.FailedRecordService;
 import org.apache.kafka.common.TopicPartition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,11 +13,10 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.listener.CommonErrorHandler;
+import org.springframework.kafka.listener.ConsumerRecordRecoverer;
 import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
 import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.util.backoff.FixedBackOff;
-
-import java.util.List;
 
 @Configuration
 @EnableKafka
@@ -28,7 +29,10 @@ public class LibraryEventKafkaConfig {
     private String dltTopic;
 
     @Autowired
-    KafkaTemplate<Integer, String> kafkaTemplate;
+    private KafkaTemplate<Integer, String> kafkaTemplate;
+
+    @Autowired
+    private FailedRecordService failedRecordService;
 
     public DeadLetterPublishingRecoverer recoverer() {
         return new DeadLetterPublishingRecoverer(kafkaTemplate,
@@ -56,9 +60,24 @@ public class LibraryEventKafkaConfig {
     }
 
     private CommonErrorHandler getErrorHandler() {
+        ConsumerRecordRecoverer consumerRecordRecoverer = (record, exception) -> {
+            if (exception.getCause() instanceof IllegalArgumentException) {
+                failedRecordService.saveFailedRecord(
+                        (String) record.value(),
+                        RecordType.RECOVERABLE
+                );
+            }
+            else {
+                failedRecordService.saveFailedRecord(
+                        (String) record.value(),
+                        RecordType.FAILED
+                );
+            }
+        };
+
         FixedBackOff backOff = new FixedBackOff(1000L, 3); // Retry 3 times with a 1 second interval
 
-        DefaultErrorHandler errorHandler = new DefaultErrorHandler(recoverer(), backOff);
+        DefaultErrorHandler errorHandler = new DefaultErrorHandler(consumerRecordRecoverer, backOff);
 
         errorHandler.setRetryListeners(
                 (record, exception, deliveryAttempt) -> {
